@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	err := godotenv.Load("/home/marcosvieira/projs/go-saldo/src/config/.env")
+	err := godotenv.Load("config/.env")
 	if err != nil {
 		log.Fatal("Aviso: .env não encontrado")
 	}
