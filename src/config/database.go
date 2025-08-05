@@ -2,17 +2,16 @@ package config
 
 import (
 	"log"
-	"os/user"
+
+	"github.com/MarcosVieira71/go-saldo/models/user"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
-
-func InitDB() {
+func InitDB() *gorm.DB {
 	var err error
-	DB, err = gorm.Open(sqlite.Open("app.db"), &gorm.Config{})
+	DB, err := gorm.Open(sqlite.Open("app.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Erro ao conectar ao banco:", err)
 	}
@@ -21,4 +20,6 @@ func InitDB() {
 	if err != nil {
 		log.Fatal("Erro na migração do banco:", err)
 	}
+
+	return DB
 }

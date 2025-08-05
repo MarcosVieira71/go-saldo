@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func setupTestDB(t *testing.T) *gorm.DB {
+func SetupTestDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Silent),
 	})

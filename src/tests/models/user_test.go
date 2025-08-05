@@ -6,6 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/MarcosVieira71/go-saldo/models/user"
+	"github.com/MarcosVieira71/go-saldo/tests"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -16,7 +17,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestAddUser(t *testing.T) {
-	db := setupTestDB(t)
+	db := tests.SetupTestDB(t)
 	u, _ := user.CreateUser("João", "joao@email.com", "123")
 	err := user.AddUser(db, u)
 	if err != nil {
@@ -25,7 +26,7 @@ func TestAddUser(t *testing.T) {
 }
 
 func TestNewPassword(t *testing.T) {
-	db := setupTestDB(t)
+	db := tests.SetupTestDB(t)
 
 	plainPassword := "123"
 	u, _ := user.CreateUser("João", "joao@email.com", plainPassword)
@@ -49,8 +50,31 @@ func TestNewPassword(t *testing.T) {
 	}
 }
 
+func TestGetUserByID(t *testing.T) {
+	db := tests.SetupTestDB(t)
+
+	u, _ := user.CreateUser("João", "joao@email.com", "123")
+	_ = user.AddUser(db, u)
+
+	_, err := user.GetUserByID(db, 1)
+	if err != nil {
+		t.Errorf("Erro ao encontrar usuário")
+	}
+}
+func TestGetUserByNonExistentID(t *testing.T) {
+	db := tests.SetupTestDB(t)
+
+	u, _ := user.CreateUser("João", "joao@email.com", "123")
+	_ = user.AddUser(db, u)
+
+	_, err := user.GetUserByID(db, 2)
+	if err == nil {
+		t.Errorf("Encontrou usuário inexistente")
+	}
+}
+
 func TestGetUserByEmail(t *testing.T) {
-	db := setupTestDB(t)
+	db := tests.SetupTestDB(t)
 
 	u, _ := user.CreateUser("João", "joao@email.com", "123")
 	_ = user.AddUser(db, u)
@@ -62,7 +86,7 @@ func TestGetUserByEmail(t *testing.T) {
 }
 
 func TestGetUserByNonExistentEmail(t *testing.T) {
-	db := setupTestDB(t)
+	db := tests.SetupTestDB(t)
 
 	_, err := user.GetUserByEmail(db, "joao@email.com")
 	if err == nil {
@@ -71,7 +95,7 @@ func TestGetUserByNonExistentEmail(t *testing.T) {
 }
 
 func TestAddUserWithSameEmail(t *testing.T) {
-	db := setupTestDB(t)
+	db := tests.SetupTestDB(t)
 
 	u, _ := user.CreateUser("João", "joao@email.com", "123")
 	err := user.AddUser(db, u)

@@ -1,8 +1,12 @@
 package main
 
-import "github.com/MarcosVieira71/go-saldo/config"
+import (
+	"github.com/MarcosVieira71/go-saldo/config"
+	"github.com/MarcosVieira71/go-saldo/routes"
+)
 
 func main() {
-	config.InitDB()
-
+	DB := config.InitDB()
+	r := routes.SetupRoutes(DB)
+	r.Run()
 }
