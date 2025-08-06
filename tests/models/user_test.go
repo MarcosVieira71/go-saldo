@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/MarcosVieira71/go-saldo/models/user"
+	"github.com/MarcosVieira71/go-saldo/src/models/user"
 	"github.com/MarcosVieira71/go-saldo/tests"
 )
 

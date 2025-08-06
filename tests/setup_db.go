@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/MarcosVieira71/go-saldo/models/user"
+	"github.com/MarcosVieira71/go-saldo/src/models/user"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

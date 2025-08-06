@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/MarcosVieira71/go-saldo/config"
-	"github.com/MarcosVieira71/go-saldo/routes"
+	"github.com/MarcosVieira71/go-saldo/src/config"
+	"github.com/MarcosVieira71/go-saldo/src/routes"
 )
 
 func main() {
