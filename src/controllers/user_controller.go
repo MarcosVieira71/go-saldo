@@ -17,6 +17,14 @@ func NewUserController(db *gorm.DB) *UserController {
 	return &UserController{DB: db}
 }
 
+func JSONResponse(c *gin.Context, status int, data interface{}, message string, err string) {
+	c.JSON(status, gin.H{
+		"data":    data,
+		"message": message,
+		"error":   err,
+	})
+}
+
 func (uc *UserController) CreateUser(c *gin.Context) {
 	var req struct {
 		Name     string `json:"name"`
@@ -25,64 +33,94 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
+		JSONResponse(c, http.StatusBadRequest, nil, "", "Dados inválidos")
 		return
 	}
 
 	u, err := user.CreateUser(req.Name, req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao criar usuário"})
+		JSONResponse(c, http.StatusInternalServerError, nil, "", "Erro ao criar usuário")
 		return
 	}
 
 	if err := user.AddUser(uc.DB, u); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Erro ao salvar no banco : " + err.Error()})
+		JSONResponse(c, http.StatusBadRequest, nil, "", "Erro ao salvar no banco: "+err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Usuário criado com sucesso", "user": u})
+	JSONResponse(c, http.StatusCreated, u, "Usuário criado com sucesso", "")
 }
 
 func (uc *UserController) GetByID(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		JSONResponse(c, http.StatusBadRequest, nil, "", "ID inválido")
 		return
 	}
 
 	u, err := user.GetUserByID(uc.DB, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Usuário não encontrado"})
+		JSONResponse(c, http.StatusNotFound, nil, "", "Usuário não encontrado")
 		return
 	}
 
-	c.JSON(http.StatusOK, u)
+	JSONResponse(c, http.StatusOK, u, "", "")
 }
 
 func (uc *UserController) DeleteUser(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		JSONResponse(c, http.StatusBadRequest, nil, "", "ID inválido")
 		return
 	}
 
-	user, err := user.DeleteUser(uc.DB, id)
+	deletedUser, err := user.DeleteUser(uc.DB, id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		JSONResponse(c, http.StatusNotFound, nil, "", err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Usuário deletado", "user": user})
+	JSONResponse(c, http.StatusOK, deletedUser, "Usuário deletado", "")
+}
+
+func (uc *UserController) UpdateUser(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		JSONResponse(c, http.StatusBadRequest, nil, "", "ID inválido")
+		return
+	}
+
+	var req struct {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		JSONResponse(c, http.StatusBadRequest, nil, "", "Dados inválidos")
+		return
+	}
+
+	existingUser, err := user.GetUserByID(uc.DB, id)
+	if err != nil {
+		JSONResponse(c, http.StatusNotFound, nil, "", "Usuário não encontrado")
+		return
+	}
+
+	if _, err := user.UpdateUser(uc.DB, id, req.Name, req.Email, req.Password); err != nil {
+		JSONResponse(c, http.StatusInternalServerError, nil, "", "Erro ao atualizar usuário")
+		return
+	}
+
+	JSONResponse(c, http.StatusOK, existingUser, "Usuário atualizado com sucesso", "")
 }
 
 func (uc *UserController) GetAllUsers(c *gin.Context) {
 	users, err := user.GetAllUsers(uc.DB)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao buscar usuários"})
+		JSONResponse(c, http.StatusInternalServerError, nil, "", "Erro ao buscar usuários")
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
+	JSONResponse(c, http.StatusOK, users, "", "")
 }

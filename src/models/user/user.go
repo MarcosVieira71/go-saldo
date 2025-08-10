@@ -59,6 +59,29 @@ func DeleteUser(db *gorm.DB, id int) (*User, error) {
 	return &u, nil
 }
 
+func UpdateUser(db *gorm.DB, id int, name, email, password string) (*User, error) {
+	var u User
+	if err := db.First(&u, id).Error; err != nil {
+		return nil, err
+	}
+
+	u.Name = name
+	u.Email = email
+	if password != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, err
+		}
+		u.Password = string(hash)
+	}
+
+	if err := db.Save(&u).Error; err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}
+
 func GetAllUsers(db *gorm.DB) ([]User, error) {
 	var users []User
 	if err := db.Find(&users).Error; err != nil {
