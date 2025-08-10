@@ -101,18 +101,19 @@ func (uc *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	existingUser, err := user.GetUserByID(uc.DB, id)
+	_, err = user.GetUserByID(uc.DB, id)
 	if err != nil {
 		JSONResponse(c, http.StatusNotFound, nil, "", "Usuário não encontrado")
 		return
 	}
 
-	if _, err := user.UpdateUser(uc.DB, id, req.Name, req.Email, req.Password); err != nil {
+	updatedUser, err := user.UpdateUser(uc.DB, id, req.Name, req.Email, req.Password)
+	if err != nil {
 		JSONResponse(c, http.StatusInternalServerError, nil, "", "Erro ao atualizar usuário")
 		return
 	}
 
-	JSONResponse(c, http.StatusOK, existingUser, "Usuário atualizado com sucesso", "")
+	JSONResponse(c, http.StatusOK, updatedUser, "Usuário atualizado com sucesso", "")
 }
 
 func (uc *UserController) GetAllUsers(c *gin.Context) {
