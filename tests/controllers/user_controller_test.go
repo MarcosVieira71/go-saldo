@@ -57,6 +57,7 @@ func TestGetAllUsers_EmptyAndWithUsers(t *testing.T) {
 	router, uc := setupRouterWithDB(t)
 
 	req := httptest.NewRequest("GET", "/users", nil)
+	req.Header.Set("Authorization", "Bearer "+tests.GenerateAdminToken())
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -68,6 +69,7 @@ func TestGetAllUsers_EmptyAndWithUsers(t *testing.T) {
 	assert.NoError(t, err)
 
 	req = httptest.NewRequest("GET", "/users", nil)
+	req.Header.Set("Authorization", "Bearer "+tests.GenerateAdminToken())
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -81,14 +83,13 @@ func TestUpdateUser_Success(t *testing.T) {
 
 	u, _ := user.CreateUser("Bob", "bob@email.com", "123")
 	err := user.AddUser(uc.DB, u)
-	if err != nil {
-		t.Fatalf("Erro ao adicionar usuário: %v", err)
-	}
+	assert.NoError(t, err)
 
 	body := `{"name":"Bob Updated","email":"bobupdated@email.com","password":"456"}`
 	idStr := strconv.FormatUint(uint64(u.Id), 10)
 	req := httptest.NewRequest("PUT", "/users/"+idStr, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+tests.GenerateUserToken(u.Id))
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
@@ -104,6 +105,7 @@ func TestUpdateUser_InvalidID(t *testing.T) {
 	body := `{"name":"NoOne","email":"noone@email.com","password":"123"}`
 	req := httptest.NewRequest("PUT", "/users/invalid-id", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+tests.GenerateAdminToken())
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
@@ -121,6 +123,7 @@ func TestDeleteUser_Success(t *testing.T) {
 	idStr := strconv.FormatUint(uint64(u.Id), 10)
 
 	req := httptest.NewRequest("DELETE", "/users/"+idStr, nil)
+	req.Header.Set("Authorization", "Bearer "+tests.GenerateUserToken(u.Id))
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
@@ -133,6 +136,7 @@ func TestDeleteUser_InvalidID(t *testing.T) {
 	router, _ := setupRouterWithDB(t)
 
 	req := httptest.NewRequest("DELETE", "/users/abc", nil)
+	req.Header.Set("Authorization", "Bearer "+tests.GenerateAdminToken())
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
@@ -142,7 +146,6 @@ func TestDeleteUser_InvalidID(t *testing.T) {
 }
 
 func TestLogin_Success(t *testing.T) {
-
 	router, uc := setupRouterWithDB(t)
 
 	u, _ := user.CreateUser("TestLogin", "login@example.com", "123456")
