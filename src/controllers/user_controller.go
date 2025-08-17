@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/MarcosVieira71/go-saldo/src/config"
 	"github.com/MarcosVieira71/go-saldo/src/models/user"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -124,4 +125,30 @@ func (uc *UserController) GetAllUsers(c *gin.Context) {
 	}
 
 	JSONResponse(c, http.StatusOK, users, "", "")
+}
+
+func (uc *UserController) Login(c *gin.Context) {
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		JSONResponse(c, http.StatusBadRequest, nil, "", "Dados inválidos")
+		return
+	}
+
+	u, err := user.AuthenticateUser(uc.DB, req.Email, req.Password)
+	if err != nil {
+		JSONResponse(c, http.StatusUnauthorized, nil, "", "Credenciais inválidas")
+		return
+	}
+
+	token, err := config.CreateJWT(u.Id, u.Role)
+	if err != nil {
+		JSONResponse(c, http.StatusInternalServerError, nil, "", "Erro ao gerar token")
+		return
+	}
+
+	JSONResponse(c, http.StatusOK, gin.H{"access_token": token}, "Login realizado com sucesso", "")
 }

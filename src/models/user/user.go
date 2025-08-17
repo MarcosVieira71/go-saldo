@@ -10,6 +10,7 @@ type User struct {
 	Name     string
 	Email    string `gorm:"unique"`
 	Password string `json:"-"`
+	Role     string `gorm:"default:user"`
 }
 
 func CreateUser(name, email, password string) (*User, error) {

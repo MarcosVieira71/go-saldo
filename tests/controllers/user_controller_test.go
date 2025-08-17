@@ -9,6 +9,7 @@ import (
 
 	"github.com/MarcosVieira71/go-saldo/src/controllers"
 	"github.com/MarcosVieira71/go-saldo/src/models/user"
+	"github.com/MarcosVieira71/go-saldo/src/routes"
 	"github.com/MarcosVieira71/go-saldo/tests"
 
 	"github.com/gin-gonic/gin"
@@ -19,13 +20,7 @@ func setupRouterWithDB(t *testing.T) (*gin.Engine, *controllers.UserController) 
 	db := tests.SetupTestDB(t)
 	uc := controllers.NewUserController(db)
 
-	router := gin.Default()
-	router.POST("/users", uc.CreateUser)
-	router.GET("/users", uc.GetAllUsers)
-	router.PUT("/users/:id", uc.UpdateUser)
-	router.DELETE("/users/:id", uc.DeleteUser)
-	router.GET("/users/:id", uc.GetByID)
-
+	router := routes.SetupRoutes(db, uc)
 	return router, uc
 }
 
@@ -144,4 +139,38 @@ func TestDeleteUser_InvalidID(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Contains(t, w.Body.String(), "ID inválido")
+}
+
+func TestLogin_Success(t *testing.T) {
+
+	router, uc := setupRouterWithDB(t)
+
+	u, _ := user.CreateUser("TestLogin", "login@example.com", "123456")
+	err := user.AddUser(uc.DB, u)
+	assert.NoError(t, err)
+
+	body := `{"email":"login@example.com","password":"123456"}`
+	req := httptest.NewRequest("POST", "/users/login", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "access_token")
+	assert.Contains(t, w.Body.String(), "Login realizado com sucesso")
+}
+
+func TestLogin_Failure_InvalidCredentials(t *testing.T) {
+	router, _ := setupRouterWithDB(t)
+
+	body := `{"email":"wrong@example.com","password":"123456"}`
+	req := httptest.NewRequest("POST", "/users/login", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Contains(t, w.Body.String(), "Credenciais inválidas")
 }
