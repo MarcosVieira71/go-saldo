@@ -10,10 +10,11 @@ import (
 func Init() {
 	err := godotenv.Load("config/.env")
 	if err != nil {
-		log.Fatal("Porq eu?")
-		log.Fatal("Aviso: .env não encontrado")
+		log.Print("Aviso: .env não encontrado")
 	}
-	// fmt.Println("JWT_KEY from env:", os.Getenv("JWT_KEY"))
+	if len(JwtKey) == 0 {
+		log.Fatal("JWT_KEY não pode estar vazio")
+	}
 }
 
 var JwtKey = []byte(os.Getenv("JWT_KEY"))
