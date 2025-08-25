@@ -10,16 +10,18 @@ import (
 func SetupRoutes(db *gorm.DB, userController *controllers.UserController) *gin.Engine {
 	r := gin.Default()
 
-	userRoutes := r.Group("/users")
+	public := r.Group("/auth")
 	{
-		userRoutes.POST("", userController.CreateUser)
-		userRoutes.POST("/login", userController.Login)
+		public.POST("/register", userController.CreateUser)
+		public.POST("/login", userController.Login)
+	}
 
-		userRoutes.GET("", middlewares.AdminOnly(), userController.GetAllUsers)
-
-		userRoutes.GET("/:id", middlewares.UserOnly(), userController.GetByID)
-		userRoutes.PUT("/:id", middlewares.UserOnly(), userController.UpdateUser)
-		userRoutes.DELETE("/:id", middlewares.UserOnly(), userController.DeleteUser)
+	users := r.Group("/users")
+	{
+		users.GET("", middlewares.AdminOnly(), userController.GetAllUsers)
+		users.GET("/:id", middlewares.UserOnly(), userController.GetByID)
+		users.PUT("/:id", middlewares.UserOnly(), userController.UpdateUser)
+		users.DELETE("/:id", middlewares.UserOnly(), userController.DeleteUser)
 	}
 
 	return r

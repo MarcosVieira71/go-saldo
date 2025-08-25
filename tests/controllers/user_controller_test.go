@@ -28,7 +28,7 @@ func TestCreateUser_Success(t *testing.T) {
 	router, _ := setupRouterWithDB(t)
 
 	body := `{"name":"Test User","email":"test@example.com","password":"123456"}`
-	req := httptest.NewRequest("POST", "/users", strings.NewReader(body))
+	req := httptest.NewRequest("POST", "/auth/register", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
@@ -43,7 +43,7 @@ func TestCreateUser_InvalidJSON(t *testing.T) {
 	router, _ := setupRouterWithDB(t)
 
 	body := `{"name":"Test User","email":"test@example.com"`
-	req := httptest.NewRequest("POST", "/users", strings.NewReader(body))
+	req := httptest.NewRequest("POST", "/auth/register", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
@@ -153,7 +153,7 @@ func TestLogin_Success(t *testing.T) {
 	assert.NoError(t, err)
 
 	body := `{"email":"login@example.com","password":"123456"}`
-	req := httptest.NewRequest("POST", "/users/login", strings.NewReader(body))
+	req := httptest.NewRequest("POST", "/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
@@ -168,7 +168,7 @@ func TestLogin_Failure_InvalidCredentials(t *testing.T) {
 	router, _ := setupRouterWithDB(t)
 
 	body := `{"email":"wrong@example.com","password":"123456"}`
-	req := httptest.NewRequest("POST", "/users/login", strings.NewReader(body))
+	req := httptest.NewRequest("POST", "/auth/login", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 
