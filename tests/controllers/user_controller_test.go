@@ -20,7 +20,7 @@ func setupRouterWithDB(t *testing.T) (*gin.Engine, *controllers.UserController) 
 	db := tests.SetupTestDB(t)
 	uc := controllers.NewUserController(db)
 
-	router := routes.SetupRoutes(db, uc)
+	router := routes.SetupRoutes(db)
 	return router, uc
 }
 

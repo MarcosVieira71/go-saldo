@@ -7,13 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupRoutes(db *gorm.DB, userController *controllers.UserController) *gin.Engine {
+func SetupRoutes(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
+	authController := controllers.NewAuthController(db)
+	userController := controllers.NewUserController(db)
 
 	public := r.Group("/auth")
 	{
-		public.POST("/register", userController.CreateUser)
-		public.POST("/login", userController.Login)
+		public.POST("/register", authController.Register)
+		public.POST("/login", authController.Login)
 	}
 
 	users := r.Group("/users")
